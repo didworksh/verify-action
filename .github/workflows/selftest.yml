@@ -6,6 +6,9 @@ on:
   push:
     branches: [main]
   pull_request:
+  # Lets the gate be re-run on demand — after publishing a new CLI, or to
+  # re-check the live endpoints without waiting for the nightly schedule.
+  workflow_dispatch:
   # The claims check live endpoints, so a daily run catches a break that no
   # commit here caused.
   schedule:
