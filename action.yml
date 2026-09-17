@@ -1,5 +1,5 @@
 name: "DidWork — verify outcomes"
-description: "Run this repo's .didwork.yml gate: check that the outcomes this branch claims are actually true, and block the merge when they are not."
+description: "Verify that the outcomes a pull request claims are actually true, and block the merge when they are not."
 author: "DidWork"
 branding:
   icon: "check-circle"
