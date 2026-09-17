@@ -1,0 +1,13 @@
+# The gate this repo runs against itself, so the action is proven on every
+# push rather than only in a README.
+version: 1
+claims:
+  - name: DidWork is reachable
+    type: http.ok
+    expected:
+      url: https://didwork.sh/why
+
+  - name: Demo fixture is healthy
+    type: http.ok
+    expected:
+      url: https://didwork.sh/demo/healthy

@@ -1,0 +1,56 @@
+# Runs this action against this repo's own .didwork.yml. If the action can no
+# longer gate a build, this workflow is the thing that goes red.
+name: Self-test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  # The claims check live endpoints, so a daily run catches a break that no
+  # commit here caused.
+  schedule:
+    - cron: "23 7 * * *"
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  gate:
+    name: didwork
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run the gate
+        uses: ./
+        with:
+          # Only on a pull request is there anything to comment on.
+          comment: ${{ github.event_name == 'pull_request' }}
+
+  # The gate must also fail when an outcome is not true. A gate that only ever
+  # passes proves nothing, so this job asserts the failing path explicitly.
+  fails-closed:
+    name: fails on a false claim
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Write a gate that cannot pass
+        run: |
+          set -euo pipefail
+          cat > broken.yml <<'EOF'
+          version: 1
+          claims:
+            - name: Endpoint that is always 503
+              type: http.ok
+              expected:
+                url: https://didwork.sh/demo/broken
+          EOF
+      - name: Expect a non-zero exit
+        run: |
+          set -uo pipefail
+          npx --yes @didwork/inspect@latest verify --config broken.yml && status=0 || status=$?
+          if [ "${status}" -ne 1 ]; then
+            echo "::error::expected exit 1 from a failing gate, got ${status}"
+            exit 1
+          fi
+          echo "Gate correctly refused to pass a claim that is not true."

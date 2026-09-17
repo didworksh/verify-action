@@ -1,0 +1,54 @@
+name: "DidWork — verify outcomes"
+description: "Run this repo's .didwork.yml gate: check that the outcomes this branch claims are actually true, and block the merge when they are not."
+author: "DidWork"
+branding:
+  icon: "check-circle"
+  color: "blue"
+
+inputs:
+  api-key:
+    description: >-
+      DidWork API key. Without one the gate still runs, but only http.ok claims
+      verify and nothing is stored, so there are no receipts. Free at
+      https://didwork.sh/console.
+    required: false
+  config:
+    description: "Path to the gate file (default: .didwork.yml)"
+    required: false
+  comment:
+    description: "Post the result as a pull request comment (needs pull-requests: write)"
+    required: false
+    default: "true"
+  version:
+    description: "Version of the didwork CLI to run"
+    required: false
+    default: "latest"
+  github-token:
+    description: "Token used to write the pull request comment. Defaults to the workflow's own token."
+    required: false
+    default: ${{ github.token }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Verify outcomes
+      shell: bash
+      # Inputs reach the script as environment variables, never as `${{ }}`
+      # interpolated into the source: a value containing shell metacharacters
+      # would otherwise execute as part of this script.
+      env:
+        DIDWORK_API_KEY: ${{ inputs.api-key }}
+        GITHUB_TOKEN: ${{ inputs.github-token }}
+        INPUT_CONFIG: ${{ inputs.config }}
+        INPUT_COMMENT: ${{ inputs.comment }}
+        INPUT_VERSION: ${{ inputs.version }}
+      run: |
+        set -euo pipefail
+        args=()
+        if [ -n "${INPUT_CONFIG}" ]; then
+          args+=(--config "${INPUT_CONFIG}")
+        fi
+        if [ "${INPUT_COMMENT}" = "true" ]; then
+          args+=(--comment)
+        fi
+        npx --yes "@didwork/inspect@${INPUT_VERSION}" verify ${args[@]+"${args[@]}"}
