@@ -7,6 +7,8 @@ that can prove them — Stripe, GitHub, your own health endpoint — and fails t
 job when a required outcome is not true. Because it fails the job, you can make
 it a required status check and stop merges that rest on a self-report.
 
+![The gate failing a build because a required outcome is not true](assets/gate-failed.png)
+
 ```yaml
 name: Verify outcomes
 on: pull_request
@@ -73,6 +75,14 @@ scope you granted it. DidWork holds read-only credentials to the systems it
 verifies and has no write access to your repository — it can observe an outcome,
 never cause one. Drop `pull-requests: write` and set `comment: false` if you want
 the gate without the comment; the job's pass/fail is unchanged.
+
+## The pull request comment
+
+![The DidWork gate comment on a pull request](assets/pr-comment.png)
+
+One row per claim, the verdict, and the evidence behind it. It updates itself:
+a branch pushed ten times has one comment showing the current truth, not ten
+showing its history.
 
 ## Making it a required check
 
