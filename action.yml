@@ -15,6 +15,15 @@ inputs:
   config:
     description: "Path to the gate file (default: .didwork.yml)"
     required: false
+  contract:
+    description: "Evaluate a version 2 outcome contract"
+    default: "false"
+  trusted-ref:
+    description: "Full SHA of the reviewed contract commit, supplied by a protected workflow"
+    required: false
+  revision:
+    description: "Full SHA of the deployment being verified"
+    required: false
   comment:
     description: "Post the result as a pull request comment (needs pull-requests: write)"
     required: false
@@ -22,7 +31,7 @@ inputs:
   version:
     description: "Version of the didwork CLI to run"
     required: false
-    default: "latest"
+    default: "0.3.0"
   github-token:
     description: "Token used to write the pull request comment. Defaults to the workflow's own token."
     required: false
@@ -42,9 +51,19 @@ runs:
         INPUT_CONFIG: ${{ inputs.config }}
         INPUT_COMMENT: ${{ inputs.comment }}
         INPUT_VERSION: ${{ inputs.version }}
+        INPUT_CONTRACT: ${{ inputs.contract }}
+        INPUT_TRUSTED_REF: ${{ inputs.trusted-ref }}
+        INPUT_REVISION: ${{ inputs.revision }}
       run: |
         set -euo pipefail
         args=()
+        if [ "${INPUT_CONTRACT}" = "true" ]; then
+          if [ -z "${INPUT_TRUSTED_REF}" ] || [ -z "${INPUT_REVISION}" ]; then
+            echo "Contract mode requires trusted-ref and revision. Configure these in the protected workflow." >&2
+            exit 2
+          fi
+          args+=(--contract --trusted-ref "${INPUT_TRUSTED_REF}" --revision "${INPUT_REVISION}")
+        fi
         if [ -n "${INPUT_CONFIG}" ]; then
           args+=(--config "${INPUT_CONFIG}")
         fi

@@ -7,8 +7,6 @@ that can prove them — Stripe, GitHub, your own health endpoint — and fails t
 job when a required outcome is not true. Because it fails the job, you can make
 it a required status check and stop merges that rest on a self-report.
 
-![The gate failing a build because a required outcome is not true](assets/gate-failed.png)
-
 ```yaml
 name: Verify outcomes
 on: pull_request
@@ -76,14 +74,6 @@ verifies and has no write access to your repository — it can observe an outcom
 never cause one. Drop `pull-requests: write` and set `comment: false` if you want
 the gate without the comment; the job's pass/fail is unchanged.
 
-## The pull request comment
-
-![The DidWork gate comment on a pull request](assets/pr-comment.png)
-
-One row per claim, the verdict, and the evidence behind it. It updates itself:
-a branch pushed ten times has one comment showing the current truth, not ten
-showing its history.
-
 ## Making it a required check
 
 Settings → Branches → branch protection rule → **Require status checks to pass**,
@@ -94,3 +84,19 @@ then select the job (`didwork` in the example above).
 The gate still runs, but only `http.ok` claims verify, nothing is stored, and
 there are no receipts. Provider-backed claims (Stripe, GitHub, Linear, Sentry, …)
 need a key and a connected provider: https://didwork.sh/console
+
+## Reviewed outcome contracts
+
+Version 1.1.0 adds version 2 contracts with stored aggregate runs. Configure
+`contract: true`, `trusted-ref` (the full SHA of the reviewed contract), and
+`revision` (the full deployed SHA). This mode needs an API key. The CLI is pinned
+to 0.3.0 by default.
+
+The protected workflow must supply the trusted SHA; do not take it from PR code.
+Fetch that Git object before running the action. Use per-PR/environment workflow
+concurrency with `cancel-in-progress: true` and pin the Action to a reviewed
+commit. Required unknown or failed checks block the job. `comment: true` shares
+a redacted public summary, so review the contract's optional public descriptions.
+
+See [the contract guide](https://github.com/didworksh/core/blob/main/docs/OUTCOME-CONTRACTS.md)
+and [deployment example](https://github.com/didworksh/core/blob/main/examples/deployment.didwork.yml).
