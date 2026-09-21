@@ -1,0 +1,42 @@
+version: 2
+name: Production deployment
+target:
+  repository: your-org/your-app
+  revision: ${revision}
+  environment: production
+maxAgeSeconds: 300
+requirements:
+  - id: deployment
+    name: GitHub deployment succeeded for the requested revision
+    publicName: Deployment succeeded for the requested revision
+    required: true
+    claim:
+      type: github.deployment_succeeded
+      expected:
+        repository: your-org/your-app
+        environment: production
+        commit: ${revision}
+  - id: live-revision
+    name: Live application identifies the requested revision
+    publicName: Live revision matches
+    required: true
+    claim:
+      type: http.ok
+      expected:
+        url: https://your-app.example/version
+        status: 200
+        json:
+          path: revision
+          equals: ${revision}
+  - id: readiness
+    name: Application readiness reports ready
+    publicName: Application reports readiness
+    required: true
+    claim:
+      type: http.ok
+      expected:
+        url: https://your-app.example/readiness
+        status: 200
+        json:
+          path: ready
+          equals: true

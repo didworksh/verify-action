@@ -98,5 +98,5 @@ concurrency with `cancel-in-progress: true` and pin the Action to a reviewed
 commit. Required unknown or failed checks block the job. `comment: true` shares
 a redacted public summary, so review the contract's optional public descriptions.
 
-See [the contract guide](https://github.com/didworksh/core/blob/main/docs/OUTCOME-CONTRACTS.md)
-and [deployment example](https://github.com/didworksh/core/blob/main/examples/deployment.didwork.yml).
+See [the contract guide](https://didwork.sh/docs#contracts)
+and [deployment example](https://github.com/didworksh/verify-action/blob/main/examples/deployment.didwork.yml).
